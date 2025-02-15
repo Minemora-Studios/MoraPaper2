@@ -26219,7 +26219,7 @@ index cb66209c64b855dedf2e4e114a7716da13bc4587..da1366fdc4889d6a3befd43d81a19a81
      }
  }
 diff --git a/net/minecraft/server/level/ServerChunkCache.java b/net/minecraft/server/level/ServerChunkCache.java
-index 2f49dbc919f7f5eea9abce6106723c72f5ae45fb..87d4291a3944f706a694536da6de0f28c548ab8d 100644
+index fb002f8842cf551d69fae9ce9652bb9c9045e45e..74f57d9c3c9b4e7987d11069e1d58142b1e7529e 100644
 --- a/net/minecraft/server/level/ServerChunkCache.java
 +++ b/net/minecraft/server/level/ServerChunkCache.java
 @@ -52,7 +52,7 @@ import net.minecraft.world.level.storage.DimensionDataStorage;
@@ -26655,8 +26655,8 @@ index 2f49dbc919f7f5eea9abce6106723c72f5ae45fb..87d4291a3944f706a694536da6de0f28
                  this.level.tickChunk(levelChunk, _int);
              }
          }
-@@ -516,10 +613,13 @@ public class ServerChunkCache extends ChunkSource {
-     }
+@@ -525,10 +622,13 @@ public class ServerChunkCache extends ChunkSource {
+     // MoraPaper end
  
      private void getFullChunk(long chunkPos, Consumer<LevelChunk> fullChunkGetter) {
 -        ChunkHolder visibleChunkIfPresent = this.getVisibleChunkIfPresent(chunkPos);
@@ -26672,7 +26672,7 @@ index 2f49dbc919f7f5eea9abce6106723c72f5ae45fb..87d4291a3944f706a694536da6de0f28
      }
  
      @Override
-@@ -607,6 +707,12 @@ public class ServerChunkCache extends ChunkSource {
+@@ -616,6 +716,12 @@ public class ServerChunkCache extends ChunkSource {
          this.chunkMap.setServerViewDistance(viewDistance);
      }
  
@@ -26685,7 +26685,7 @@ index 2f49dbc919f7f5eea9abce6106723c72f5ae45fb..87d4291a3944f706a694536da6de0f28
      public void setSimulationDistance(int simulationDistance) {
          this.distanceManager.updateSimulationDistance(simulationDistance);
      }
-@@ -654,7 +760,7 @@ public class ServerChunkCache extends ChunkSource {
+@@ -663,7 +769,7 @@ public class ServerChunkCache extends ChunkSource {
          }
      }
  
@@ -26694,7 +26694,7 @@ index 2f49dbc919f7f5eea9abce6106723c72f5ae45fb..87d4291a3944f706a694536da6de0f28
      }
  
      public final class MainThreadExecutor extends BlockableEventLoop<Runnable> {
-@@ -695,18 +801,14 @@ public class ServerChunkCache extends ChunkSource {
+@@ -704,18 +810,14 @@ public class ServerChunkCache extends ChunkSource {
  
          @Override
          public boolean pollTask() {

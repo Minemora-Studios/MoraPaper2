@@ -202,10 +202,26 @@
              ChunkPos pos = levelChunk.getPos();
              levelChunk.incrementInhabitedTime(timeInhabited);
 -            if (!filteredSpawningCategories.isEmpty() && this.level.getWorldBorder().isWithinBounds(pos)) {
-+            if (!filteredSpawningCategories.isEmpty() && this.level.getWorldBorder().isWithinBounds(pos) && this.chunkMap.anyPlayerCloseEnoughForSpawning(pos, true)) { // Spigot
++            if (!filteredSpawningCategories.isEmpty() && this.level.getWorldBorder().isWithinBounds(pos) && !isInNoNaturalSpawnRadius(pos) && this.chunkMap.anyPlayerCloseEnoughForSpawning(pos, true)) { // Spigot
                  NaturalSpawner.spawnForChunk(this.level, levelChunk, spawnState, filteredSpawningCategories);
              }
  
+@@ -428,6 +_,15 @@
+         }
+     }
+ 
++    // MoraPaper start
++    private boolean isInNoNaturalSpawnRadius(ChunkPos pos) {
++        int radius = 10; //TODO from config
++        int x = pos.x;
++        int z = pos.z;
++        return x >= -radius && x < radius && z >= -radius && z < radius;
++    }
++    // MoraPaper end
++
+     private void getFullChunk(long chunkPos, Consumer<LevelChunk> fullChunkGetter) {
+         ChunkHolder visibleChunkIfPresent = this.getVisibleChunkIfPresent(chunkPos);
+         if (visibleChunkIfPresent != null) {
 @@ -526,8 +_,13 @@
  
      @Override
