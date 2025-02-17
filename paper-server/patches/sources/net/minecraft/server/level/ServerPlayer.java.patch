@@ -1189,7 +1189,7 @@
          if (this.acceptsSystemMessages(overlay)) {
              this.connection
                  .send(
-@@ -1705,8 +_,13 @@
+@@ -1705,8 +_,14 @@
      }
  
      public void sendChatMessage(OutgoingChatMessage message, boolean filtered, ChatType.Bound boundType) {
@@ -1197,6 +1197,7 @@
 +        this.sendChatMessage(message, filtered, boundType, null);
 +    }
 +    public void sendChatMessage(OutgoingChatMessage message, boolean filtered, ChatType.Bound boundType, @Nullable Component unsigned) {
++        if(chatDisabled) return;
 +        // Paper end
          if (this.acceptsChatMessages()) {
 -            message.sendToPlayer(this, filtered, boundType);
