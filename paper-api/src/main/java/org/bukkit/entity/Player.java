@@ -3902,4 +3902,7 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
      * @return the result of this method, holding leftovers and spawned items.
      */
     PlayerGiveResult give(Collection<ItemStack> items, boolean dropIfFull);
+
+    // MoraPaper
+    void setChatDisabled(boolean value);
 }

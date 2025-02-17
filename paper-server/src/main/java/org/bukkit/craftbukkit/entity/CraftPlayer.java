@@ -3599,4 +3599,8 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
         return forwardMovement == backwardMovement ? 0 : forwardMovement ? 1 : -1;
     }
+    
+    public void setChatDisabled(final boolean value) {
+        getHandle().chatDisabled = value;
+    }
 }
