@@ -1789,7 +1789,7 @@
                      break;
                  case RELEASE_SHIFT_KEY:
                      this.player.setShiftKeyDown(false);
-@@ -1551,12 +_,20 @@
+@@ -1551,12 +_,21 @@
              }
  
              if (i > 4096) {
@@ -1805,6 +1805,7 @@
 +            this.sendDisguisedChatMessage(chatMessage.decoratedContent(), boundType);
 +            return;
 +        }
++        if(player.chatDisabled) return;
 +        // CraftBukkit end
 +        // Paper start - Ensure that client receives chat packets in the same order that we add into the message signature cache
 +        synchronized (this.messageSignatureCache) {
