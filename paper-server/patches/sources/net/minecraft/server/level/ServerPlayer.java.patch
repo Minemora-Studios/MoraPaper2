@@ -1177,6 +1177,18 @@
          }
      }
  
+@@ -1681,7 +_,11 @@
+         this.sendSystemMessage(mesage, false);
+     }
+ 
++    // MoraPaper
++    public boolean chatDisabled = false;
++
+     public void sendSystemMessage(Component message, boolean overlay) {
++        if(chatDisabled) return;
+         if (this.acceptsSystemMessages(overlay)) {
+             this.connection
+                 .send(
 @@ -1705,8 +_,13 @@
      }
  

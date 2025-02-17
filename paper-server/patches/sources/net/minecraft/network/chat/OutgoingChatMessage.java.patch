@@ -13,7 +13,7 @@
      static OutgoingChatMessage create(PlayerChatMessage message) {
          return (OutgoingChatMessage)(message.isSystem()
              ? new OutgoingChatMessage.Disguised(message.decoratedContent())
-@@ -16,7 +_,12 @@
+@@ -16,7 +_,13 @@
      public record Disguised(@Override Component content) implements OutgoingChatMessage {
          @Override
          public void sendToPlayer(ServerPlayer player, boolean filtered, ChatType.Bound boundType) {
@@ -22,12 +22,13 @@
 +            this.sendToPlayer(player, filtered, boundType, null);
 +        }
 +        public void sendToPlayer(ServerPlayer player, boolean filtered, ChatType.Bound boundType, @javax.annotation.Nullable Component unsigned) {
++            if(player.chatDisabled) return;
 +            player.connection.sendDisguisedChatMessage(unsigned != null ? unsigned : this.content, boundType);
 +            // Paper end
          }
      }
  
-@@ -28,7 +_,13 @@
+@@ -28,7 +_,14 @@
  
          @Override
          public void sendToPlayer(ServerPlayer player, boolean filtered, ChatType.Bound boundType) {
@@ -35,6 +36,7 @@
 +            this.sendToPlayer(player, filtered, boundType, null);
 +        }
 +        public void sendToPlayer(ServerPlayer player, boolean filtered, ChatType.Bound boundType, @javax.annotation.Nullable Component unsigned) {
++            if(player.chatDisabled) return;
 +            // Paper end
              PlayerChatMessage playerChatMessage = this.message.filter(filtered);
 +            playerChatMessage = unsigned != null ? playerChatMessage.withUnsignedContent(unsigned) : playerChatMessage; // Paper
