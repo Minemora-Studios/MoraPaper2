@@ -3583,4 +3583,9 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         handle.containerMenu.broadcastChanges();
         return new PaperPlayerGiveResult(leftovers.build(), drops.build());
     }
+
+    @Override
+    public void setChatDisabled(final boolean value) {
+        getHandle().chatDisabled = value;
+    }
 }
