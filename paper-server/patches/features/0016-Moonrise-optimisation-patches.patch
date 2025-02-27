@@ -24276,7 +24276,7 @@ index e823b8aac00158892538083bc877ccf99895909a..7d871318065f19540748363809de8265
      private static final ChunkStep FULL_CHUNK_STEP = ChunkPyramid.GENERATION_PYRAMID.getStepTo(ChunkStatus.FULL);
      public static final int RADIUS_AROUND_FULL_CHUNK = FULL_CHUNK_STEP.accumulatedDependencies().getRadius();
 diff --git a/net/minecraft/server/level/ChunkMap.java b/net/minecraft/server/level/ChunkMap.java
-index ad665c7535c615d2b03a3e7864be435f933235dd..3dff97f13586be3b52bbe786852c185f6753a019 100644
+index ad665c7535c615d2b03a3e7864be435f933235dd..c08a701cba1ea6bf97c88cba5c59ec1f1b301cf8 100644
 --- a/net/minecraft/server/level/ChunkMap.java
 +++ b/net/minecraft/server/level/ChunkMap.java
 @@ -96,7 +96,7 @@ import net.minecraft.world.level.storage.LevelStorageSource;
@@ -24839,7 +24839,7 @@ index ad665c7535c615d2b03a3e7864be435f933235dd..3dff97f13586be3b52bbe786852c185f
      }
  
      public int getTickingGenerated() {
-@@ -775,125 +490,78 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
+@@ -775,126 +490,79 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
      }
  
      private boolean saveChunkIfNeeded(ChunkHolder chunk, long gametime) {
@@ -25004,16 +25004,17 @@ index ad665c7535c615d2b03a3e7864be435f933235dd..3dff97f13586be3b52bbe786852c185f
 +            ca.spottedleaf.moonrise.patches.chunk_system.io.MoonriseRegionFileIO.RegionFileType.CHUNK_DATA
 +        );
 +        return null;
-+    }
-+
+     }
+ 
 +    @Override
 +    public void flushWorker() {
 +        ca.spottedleaf.moonrise.patches.chunk_system.io.MoonriseRegionFileIO.flush(this.level);
-     }
++    }
 +    // Paper end - rewrite chunk system
- 
++
      @Nullable
      public LevelChunk getChunkToSend(long chunkPos) {
+         ChunkHolder visibleChunkIfPresent = this.getVisibleChunkIfPresent(chunkPos);
 @@ -981,7 +649,7 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
      }
  
@@ -25241,8 +25242,8 @@ index ad665c7535c615d2b03a3e7864be435f933235dd..3dff97f13586be3b52bbe786852c185f
              trackedEntity1.broadcastRemoved();
          }
 +        ((ca.spottedleaf.moonrise.patches.entity_tracker.EntityTrackerEntity)entity).moonrise$setTrackedEntity(null); // Paper - optimise entity tracker
-     }
- 
++    }
++
 +    // Paper start - optimise entity tracker
 +    private void newTrackerTick() {
 +        final ca.spottedleaf.moonrise.patches.chunk_system.level.entity.server.ServerEntityLookup entityLookup = (ca.spottedleaf.moonrise.patches.chunk_system.level.entity.server.ServerEntityLookup)((ca.spottedleaf.moonrise.patches.chunk_system.level.ChunkSystemServerLevel)this.level).moonrise$getEntityLookup();;
@@ -25261,9 +25262,9 @@ index ad665c7535c615d2b03a3e7864be435f933235dd..3dff97f13586be3b52bbe786852c185f
 +                tracker.serverEntity.sendChanges();
 +            }
 +        }
-+    }
+     }
 +    // Paper end - optimise entity tracker
-+
+ 
      protected void tick() {
 -        for (ServerPlayer serverPlayer : this.playerMap.getAllPlayers()) {
 -            this.updateChunkTracking(serverPlayer);
@@ -25311,7 +25312,7 @@ index ad665c7535c615d2b03a3e7864be435f933235dd..3dff97f13586be3b52bbe786852c185f
          }
  
          @Nullable
-@@ -1334,13 +1040,96 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
+@@ -1334,13 +1040,102 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
          }
      }
  
@@ -25355,11 +25356,17 @@ index ad665c7535c615d2b03a3e7864be435f933235dd..3dff97f13586be3b52bbe786852c185f
 +            }
 +
 +            if (lastChunkUpdate != currChunkUpdate || lastTrackedChunk != chunk) {
++                // MoraPaper - Iterate in the set itself not by creating a completely new arraylist
++                final java.util.Iterator<net.minecraft.server.network.ServerPlayerConnection> seenByIterator = this.seenBy.iterator();
++
 +                // need to purge any players possible not in the chunk list
-+                for (final ServerPlayerConnection conn : new java.util.ArrayList<>(this.seenBy)) {
++                while (seenByIterator.hasNext()) {
++                    final ServerPlayerConnection conn = seenByIterator.next();
 +                    final ServerPlayer player = conn.getPlayer();
++
 +                    if (!players.contains(player)) {
-+                        this.removePlayer(player);
++                        seenByIterator.remove();
++                        this.forceRemovePlayerPairing(player);
 +                    }
 +                }
 +            }
@@ -25409,7 +25416,20 @@ index ad665c7535c615d2b03a3e7864be435f933235dd..3dff97f13586be3b52bbe786852c185f
          public TrackedEntity(final Entity entity, final int range, final int updateInterval, final boolean trackDelta) {
              this.serverEntity = new ServerEntity(ChunkMap.this.level, entity, updateInterval, trackDelta, this::broadcast, this.seenBy); // CraftBukkit
              this.entity = entity;
-@@ -1431,17 +1220,24 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
+@@ -1384,6 +1179,12 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
+             }
+         }
+ 
++        // MoraSpigot - Remove the player without removing or checking for the seenBy, to prevent CME
++        // when the player is removed while in a loop
++        public void forceRemovePlayerPairing(ServerPlayer player) {
++            this.serverEntity.removePairing(player);
++        }
++
+         public void updatePlayer(ServerPlayer player) {
+             org.spigotmc.AsyncCatcher.catchOp("player tracker update"); // Spigot
+             if (player != this.entity) {
+@@ -1431,17 +1232,24 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
          }
  
          private int getEffectiveRange() {
@@ -29119,6 +29139,19 @@ index 994791a83ca6712db3e74ca9aba4bfcd95a0ec6d..1b54cf07616a10d93e9336dbd299ba5f
      }
  
      @Override
+diff --git a/net/minecraft/world/entity/ai/goal/GoalSelector.java b/net/minecraft/world/entity/ai/goal/GoalSelector.java
+index a927c2790c8ab9ccaa7161b970e10b0b44817dd8..c8cf6ae5a89655c39c917d2499d1da0bb46132ad 100644
+--- a/net/minecraft/world/entity/ai/goal/GoalSelector.java
++++ b/net/minecraft/world/entity/ai/goal/GoalSelector.java
+@@ -40,7 +40,7 @@ public class GoalSelector {
+     // Paper start - EAR 2
+     public boolean inactiveTick() {
+         this.curRate++;
+-        return this.curRate % 3 == 0; // TODO newGoalRate was already unused in 1.20.4, check if this is correct
++        return this.curRate % 40 == 0; // TODO newGoalRate was already unused in 1.20.4, check if this is correct
+     }
+ 
+     public boolean hasTasks() {
 diff --git a/net/minecraft/world/entity/ai/village/poi/PoiManager.java b/net/minecraft/world/entity/ai/village/poi/PoiManager.java
 index 7d590dd06cc69c0925d22708425520c38e3cda25..5c5724f5e3ad640f55aecbc1d8f71d1f59ecdc62 100644
 --- a/net/minecraft/world/entity/ai/village/poi/PoiManager.java
