@@ -6770,10 +6770,10 @@ index 0000000000000000000000000000000000000000..7eafc5b7cba23d8dec92ecc1050afe3f
 \ No newline at end of file
 diff --git a/ca/spottedleaf/moonrise/patches/chunk_system/scheduling/ChunkHolderManager.java b/ca/spottedleaf/moonrise/patches/chunk_system/scheduling/ChunkHolderManager.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..b5817aa8f537593f6d9fc6b612c82ccccb250ac7
+index 0000000000000000000000000000000000000000..7bb1b478f7cf0489560eccaf801f3c410e05a5fe
 --- /dev/null
 +++ b/ca/spottedleaf/moonrise/patches/chunk_system/scheduling/ChunkHolderManager.java
-@@ -0,0 +1,1456 @@
+@@ -0,0 +1,1462 @@
 +package ca.spottedleaf.moonrise.patches.chunk_system.scheduling;
 +
 +import ca.spottedleaf.concurrentutil.lock.ReentrantAreaLock;
@@ -6845,6 +6845,10 @@ index 0000000000000000000000000000000000000000..b5817aa8f537593f6d9fc6b612c82ccc
 +
 +    private static final long NO_TIMEOUT_MARKER = Long.MIN_VALUE;
 +    private static final long PROBE_MARKER = Long.MIN_VALUE + 1;
++
++    // MoraPaper - Limit chunk unloads per tick
++    private static final int MAX_CHUNK_UNLOADS_PER_TICK = 180;
++
 +    public final ReentrantAreaLock ticketLockArea;
 +
 +    private final ConcurrentLong2ReferenceChainedHashTable<SortedArraySet<Ticket<?>>> tickets = new ConcurrentLong2ReferenceChainedHashTable<>();
@@ -6892,10 +6896,10 @@ index 0000000000000000000000000000000000000000..b5817aa8f537593f6d9fc6b612c82ccc
 +        final List<NewChunkHolder> changedFullStatus = new ArrayList<>();
 +        final boolean ret;
 +        final ReentrantAreaLock.Node ticketLock = this.ticketLockArea.lock(
-+                            ((posX >> ticketShift) - 1) << ticketShift,
-+                            ((posZ >> ticketShift) - 1) << ticketShift,
-+                            (((posX >> ticketShift) + 1) << ticketShift) | ticketMask,
-+                            (((posZ >> ticketShift) + 1) << ticketShift) | ticketMask
++            ((posX >> ticketShift) - 1) << ticketShift,
++            ((posZ >> ticketShift) - 1) << ticketShift,
++            (((posX >> ticketShift) + 1) << ticketShift) | ticketMask,
++            (((posZ >> ticketShift) + 1) << ticketShift) | ticketMask
 +        );
 +        try {
 +            ret = this.processTicketUpdatesNoLock(posX >> ticketShift, posZ >> ticketShift, scheduledTasks, changedFullStatus);
@@ -6915,7 +6919,7 @@ index 0000000000000000000000000000000000000000..b5817aa8f537593f6d9fc6b612c82ccc
 +    private boolean processTicketUpdatesNoLock(final int sectionX, final int sectionZ, final List<ChunkProgressionTask> scheduledTasks,
 +                                               final List<NewChunkHolder> changedFullStatus) {
 +        return this.ticketLevelPropagator.performUpdate(
-+                sectionX, sectionZ, this.taskScheduler.schedulingLockArea, scheduledTasks, changedFullStatus
++            sectionX, sectionZ, this.taskScheduler.schedulingLockArea, scheduledTasks, changedFullStatus
 +        );
 +    }
 +
@@ -7096,9 +7100,9 @@ index 0000000000000000000000000000000000000000..b5817aa8f537593f6d9fc6b612c82ccc
 +                if ((currTime - lastLog) > TimeUnit.SECONDS.toNanos(10L)) {
 +                    lastLog = currTime;
 +                    LOGGER.info(
-+                            "Saved " + savedChunk + " block chunks, " + savedEntity + " entity chunks, " + savedPoi
-+                                    + " poi chunks in world '" + WorldUtil.getWorldName(this.world) + "', progress: "
-+                                    + format.format((double)(i+1)/(double)len * 100.0)
++                        "Saved " + savedChunk + " block chunks, " + savedEntity + " entity chunks, " + savedPoi
++                            + " poi chunks in world '" + WorldUtil.getWorldName(this.world) + "', progress: "
++                            + format.format((double)(i+1)/(double)len * 100.0)
 +                    );
 +                }
 +            }
@@ -7113,9 +7117,9 @@ index 0000000000000000000000000000000000000000..b5817aa8f537593f6d9fc6b612c82ccc
 +        }
 +        if (logProgress) {
 +            LOGGER.info(
-+                    "Saved " + savedChunk + " block chunks, " + savedEntity + " entity chunks, " + savedPoi
-+                            + " poi chunks in world '" + WorldUtil.getWorldName(this.world) + "' in "
-+                            + format.format(1.0E-9 * (System.nanoTime() - start)) + "s"
++                "Saved " + savedChunk + " block chunks, " + savedEntity + " entity chunks, " + savedPoi
++                    + " poi chunks in world '" + WorldUtil.getWorldName(this.world) + "' in "
++                    + format.format(1.0E-9 * (System.nanoTime() - start)) + "s"
 +            );
 +        }
 +    }
@@ -7476,13 +7480,13 @@ index 0000000000000000000000000000000000000000..b5817aa8f537593f6d9fc6b612c82ccc
 +        for (final PrimitiveIterator.OfLong iterator = this.tickets.keyIterator(); iterator.hasNext();) {
 +            final long coord = iterator.nextLong();
 +            sections.computeIfAbsent(
-+                    CoordinateUtils.getChunkKey(
-+                            CoordinateUtils.getChunkX(coord) >> sectionShift,
-+                            CoordinateUtils.getChunkZ(coord) >> sectionShift
-+                    ),
-+                    (final long keyInMap) -> {
-+                        return new LongArrayList();
-+                    }
++                CoordinateUtils.getChunkKey(
++                    CoordinateUtils.getChunkX(coord) >> sectionShift,
++                    CoordinateUtils.getChunkZ(coord) >> sectionShift
++                ),
++                (final long keyInMap) -> {
++                    return new LongArrayList();
++                }
 +            ).add(coord);
 +        }
 +
@@ -7864,7 +7868,9 @@ index 0000000000000000000000000000000000000000..b5817aa8f537593f6d9fc6b612c82ccc
 +        // We do need to process updates here so that any addTicket that is synchronised before this call does not go missed.
 +        this.processTicketUpdates();
 +
-+        final int toUnloadCount = Math.max(50, (int)(unloadCountTentative * 0.05));
++        // MoraPaper - Limit chunk unload to prevent RAM overuse
++        final int toUnloadCount = Math.max(50,Math.min(MAX_CHUNK_UNLOADS_PER_TICK, (int) (unloadCountTentative * 0.05)));
++
 +        int processedCount = 0;
 +
 +        for (final ChunkUnloadQueue.SectionToUnload sectionRef : unloadSectionsForRegion) {
@@ -8194,7 +8200,7 @@ index 0000000000000000000000000000000000000000..b5817aa8f537593f6d9fc6b612c82ccc
 +        ret.add("tickets", allTicketsJson);
 +
 +        for (final Iterator<ConcurrentLong2ReferenceChainedHashTable.TableEntry<SortedArraySet<Ticket<?>>>> iterator = this.tickets.entryIterator();
-+            iterator.hasNext();) {
++             iterator.hasNext();) {
 +            final ConcurrentLong2ReferenceChainedHashTable.TableEntry<SortedArraySet<Ticket<?>>> coordinateTickets = iterator.next();
 +            final long coordinate = coordinateTickets.getKey();
 +            final SortedArraySet<Ticket<?>> tickets = coordinateTickets.getValue();
@@ -23751,7 +23757,7 @@ index 841a41485af62470d833aba578069b19a0bd1e8d..409c1134327bfcc338c3ac5e658a83cc
      // CraftBukkit start
      public boolean isDebugging() {
 diff --git a/net/minecraft/server/dedicated/DedicatedServer.java b/net/minecraft/server/dedicated/DedicatedServer.java
-index f8c81d795b19e73d56d6e0196c75e441ab4c2bef..97a294d2f5c1ddf0af7ffec3e1425eb329c5751b 100644
+index ac7bc193f7ea63cbbba73df49f54a17ef7cdec40..d2db6e3a4af13984b0a790fb38e83c253914a973 100644
 --- a/net/minecraft/server/dedicated/DedicatedServer.java
 +++ b/net/minecraft/server/dedicated/DedicatedServer.java
 @@ -433,7 +433,33 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface
@@ -27496,7 +27502,7 @@ index 400b56657414177cd76a7b94c426dc7c886aa957..a275b17d0852d9d9bc850614713244e5
      }
  
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index f054ea710108e5017bc48fdda5f180a04f5b55e2..f44600604a7bf68c990cd74a1ac2d7900ff6e88e 100644
+index 5d85ec9ab4082f9f2a00abec10ab8897868c5d70..546e6df8defd7e0db746e0c289704527b6a5412e 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -178,7 +178,7 @@ import net.minecraft.world.scores.Team;
