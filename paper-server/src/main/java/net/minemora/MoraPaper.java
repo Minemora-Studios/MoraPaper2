@@ -19,6 +19,10 @@ public class MoraPaper {
 
         Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(() -> {
             List<ServerPlayer> playersSnapshot = new ArrayList<>(level.players());
+
+            double distance = Math.clamp(35-((15.0* playersSnapshot.size())/80), 20, 35);
+            Mob.distanceSqrToDisableAi = (int) (distance*distance);
+
             for (Entity entity : level.getEntitiesAsync()) {
                 if (entity instanceof Mob mob) {
                     updateNearestPlayerForMob(mob, playersSnapshot);
