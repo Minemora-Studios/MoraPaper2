@@ -155,7 +155,7 @@
      }
  
 +    // MoraPaper
-+    private static final int distanceSqrToDisableAi = 400;
++    public static final int distanceSqrToDisableAi = 400;
 +
      @Override
      public void aiStep() {
