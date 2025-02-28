@@ -14,6 +14,9 @@ import java.util.concurrent.TimeUnit;
 public class MoraPaper {
 
     public static void startNearestPlayerUpdater(ServerLevel level) {
+        // Temporal, quitar
+        MoraTimings.load();
+
         Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(() -> {
             List<ServerPlayer> playersSnapshot = new ArrayList<>(level.players());
             for (Entity entity : level.getEntitiesAsync()) {
