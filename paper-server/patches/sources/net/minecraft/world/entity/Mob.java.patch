@@ -150,6 +150,19 @@
      }
  
      @Override
+@@ -522,8 +_,12 @@
+         this.setSpeed(0.0F);
+     }
+ 
++    // MoraPaper
++    private static final int distanceSqrToDisableAi = 400;
++
+     @Override
+     public void aiStep() {
++        if(nearestPlayerDistanceSquared > distanceSqrToDisableAi) return;
+         super.aiStep();
+         ProfilerFiller profilerFiller = Profiler.get();
+         profilerFiller.push("looting");
 @@ -540,6 +_,11 @@
                      && !itemEntity.getItem().isEmpty()
                      && !itemEntity.hasPickUpDelay()
