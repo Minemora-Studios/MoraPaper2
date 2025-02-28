@@ -29,7 +29,7 @@ public class MoraPaper {
         Player player = null;
 
         for (Player player1 : players) {
-            if (EntitySelector.PLAYER_AFFECTS_SPAWNING.test(player1)) {
+            if (!player1.isSpectator() && player1.affectsSpawning) {
                 double distance = player1.distanceToSqr(mob.getX(), mob.getY(), mob.getZ());
                 if (distance < minDistance) {
                     minDistance = distance;
