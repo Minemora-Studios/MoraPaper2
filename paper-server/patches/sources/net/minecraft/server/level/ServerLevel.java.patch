@@ -1,7 +1,11 @@
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
-@@ -182,7 +_,7 @@
-     final List<ServerPlayer> players = Lists.newArrayList();
+@@ -179,10 +_,10 @@
+     private static final Logger LOGGER = LogUtils.getLogger();
+     private static final int EMPTY_TIME_NO_TICK = 300;
+     private static final int MAX_SCHEDULED_TICKS_PER_TICK = 65536;
+-    final List<ServerPlayer> players = Lists.newArrayList();
++    final List<ServerPlayer> players = new java.util.concurrent.CopyOnWriteArrayList<>(); // MoraPaper - Use CopyOnWriteArrayList for safe async loops
      public final ServerChunkCache chunkSource;
      private final MinecraftServer server;
 -    public final ServerLevelData serverLevelData;
@@ -9,7 +13,7 @@
      private int lastSpawnChunkRadius;
      final EntityTickList entityTickList = new EntityTickList();
      public final PersistentEntitySectionManager<Entity> entityManager;
-@@ -209,11 +_,132 @@
+@@ -209,11 +_,137 @@
      private final boolean tickTime;
      private final RandomSequences randomSequences;
  
@@ -134,6 +138,11 @@
 +    }
 +    // Paper end - optimise getPlayerByUUID
 +
++    // MoraPaper
++    public java.util.concurrent.ConcurrentLinkedQueue<Entity> getEntitiesAsync() {
++        return entityTickList.getEntitiesAsync();
++    }
++
      public ServerLevel(
          MinecraftServer server,
          Executor dispatcher,
@@ -217,12 +226,14 @@
          } else {
              this.dragonFight = null;
          }
-@@ -292,7 +_,15 @@
+@@ -292,7 +_,17 @@
          this.randomSequences = Objects.requireNonNullElseGet(
              randomSequences, () -> this.getDataStorage().computeIfAbsent(RandomSequences.factory(seed), "random_sequences")
          );
 -    }
 +        this.getCraftServer().addWorld(this.getWorld()); // CraftBukkit
++        // MoraPaper
++        net.minemora.MoraPaper.startNearestPlayerUpdater(this);
 +    }
 +
 +    // Paper start

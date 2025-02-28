@@ -50,10 +50,10 @@ index 409c1134327bfcc338c3ac5e658a83cc396645d1..cc2d442682496197d29ace79b22e6cf6
          ProfilerFiller profilerFiller = Profiler.get();
          this.runAllTasks(); // Paper - move runAllTasks() into full server tick (previously for timings)
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 42995dac38248032b6abecc27124adfe12ec4cab..28a67294c3e678e01d5dfd68b950234213d8e55c 100644
+index 81ef8899f1549863fe4ca53b4215dcdfdefea797..62aef8968605f8ddbf4ee536aab5f16146749baf 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
-@@ -1318,6 +1318,28 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
+@@ -1325,6 +1325,28 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
          return !this.server.isUnderSpawnProtection(this, pos, player) && this.getWorldBorder().isWithinBounds(pos);
      }
  
@@ -83,7 +83,7 @@ index 42995dac38248032b6abecc27124adfe12ec4cab..28a67294c3e678e01d5dfd68b9502342
          // Paper start - add close param
          this.save(progress, flush, skipSave, false);
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index f44600604a7bf68c990cd74a1ac2d7900ff6e88e..69b8074e18775c846d5991f40bc2e0a5186500ac 100644
+index 546e6df8defd7e0db746e0c289704527b6a5412e..ae17c0575d421f0f80861dfdfa5a616dfb1a7947 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -180,6 +180,7 @@ import org.slf4j.Logger;

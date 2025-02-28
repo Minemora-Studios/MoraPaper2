@@ -26761,7 +26761,7 @@ index da793ad12565c36fffb26eb771ff68c76632caf7..db06f966077928419bfe469260f04d7d
          if (!passengers.equals(this.lastPassengers)) {
              this.broadcastAndSend(new ClientboundSetPassengersPacket(this.entity)); // CraftBukkit
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 400b56657414177cd76a7b94c426dc7c886aa957..a275b17d0852d9d9bc850614713244e580ae81f1 100644
+index 56ea58bb511c8a55ea678636692a8413d739afda..b09f5ffe7e1a77470972bcc4e01182b391f5b660 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -170,7 +170,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
@@ -27111,9 +27111,9 @@ index 400b56657414177cd76a7b94c426dc7c886aa957..a275b17d0852d9d9bc850614713244e5
 +    }
 +    // Paper end - chunk tick iteration
  
-     public ServerLevel(
-         MinecraftServer server,
-@@ -376,18 +615,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
+     // MoraPaper
+     public java.util.concurrent.ConcurrentLinkedQueue<Entity> getEntitiesAsync() {
+@@ -381,18 +620,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
          // CraftBukkit end
          boolean flag = server.forceSynchronousWrites();
          DataFixer fixerUpper = server.getFixerUpper();
@@ -27133,7 +27133,7 @@ index 400b56657414177cd76a7b94c426dc7c886aa957..a275b17d0852d9d9bc850614713244e5
          this.chunkSource = new ServerChunkCache(
              this,
              levelStorageAccess,
-@@ -399,7 +627,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
+@@ -404,7 +632,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
              this.spigotConfig.simulationDistance, // Spigot
              flag,
              progressListener,
@@ -27142,7 +27142,7 @@ index 400b56657414177cd76a7b94c426dc7c886aa957..a275b17d0852d9d9bc850614713244e5
              () -> server.overworld().getDataStorage()
          );
          this.chunkSource.getGeneratorState().ensureStructuresGenerated();
-@@ -437,6 +665,20 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
+@@ -442,6 +670,20 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
          this.randomSequences = Objects.requireNonNullElseGet(
              randomSequences, () -> this.getDataStorage().computeIfAbsent(RandomSequences.factory(seed), "random_sequences")
          );
@@ -27161,9 +27161,9 @@ index 400b56657414177cd76a7b94c426dc7c886aa957..a275b17d0852d9d9bc850614713244e5
 +        this.chunkDataController = new ca.spottedleaf.moonrise.patches.chunk_system.io.datacontroller.ChunkDataController((ServerLevel)(Object)this, this.chunkTaskScheduler);
 +        // Paper end - rewrite chunk system
          this.getCraftServer().addWorld(this.getWorld()); // CraftBukkit
-     }
- 
-@@ -560,8 +802,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
+         // MoraPaper
+         net.minemora.MoraPaper.startNearestPlayerUpdater(this);
+@@ -567,8 +809,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
                                  profilerFiller.push("checkDespawn");
                                  entity.checkDespawn();
                                  profilerFiller.pop();
@@ -27173,7 +27173,7 @@ index 400b56657414177cd76a7b94c426dc7c886aa957..a275b17d0852d9d9bc850614713244e5
                                      Entity vehicle = entity.getVehicle();
                                      if (vehicle != null) {
                                          if (!vehicle.isRemoved() && vehicle.hasPassenger(entity)) {
-@@ -584,13 +825,16 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
+@@ -591,13 +832,16 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
          }
  
          profilerFiller.push("entityManagement");
@@ -27192,7 +27192,7 @@ index 400b56657414177cd76a7b94c426dc7c886aa957..a275b17d0852d9d9bc850614713244e5
      }
  
      protected void tickTime() {
-@@ -621,14 +865,67 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
+@@ -628,14 +872,67 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
          this.players.stream().filter(LivingEntity::isSleeping).collect(Collectors.toList()).forEach(player -> player.stopSleepInBed(false, false));
      }
  
@@ -27261,7 +27261,7 @@ index 400b56657414177cd76a7b94c426dc7c886aa957..a275b17d0852d9d9bc850614713244e5
              BlockPos blockPos = this.findLightningTargetAround(this.getBlockRandomPos(minBlockX, 0, minBlockZ, 15));
              if (this.isRainingAt(blockPos)) {
                  DifficultyInstance currentDifficultyAt = this.getCurrentDifficultyAt(blockPos);
-@@ -658,7 +955,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
+@@ -665,7 +962,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
  
          if (!this.paperConfig().environment.disableIceAndSnow) { // Paper - Option to disable ice and snow
          for (int i = 0; i < randomTickSpeed; i++) {
@@ -27270,7 +27270,7 @@ index 400b56657414177cd76a7b94c426dc7c886aa957..a275b17d0852d9d9bc850614713244e5
                  this.tickPrecipitation(this.getBlockRandomPos(minBlockX, 0, minBlockZ, 15));
              }
          }
-@@ -666,33 +963,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
+@@ -673,33 +970,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
  
          profilerFiller.popPush("tickBlocks");
          if (randomTickSpeed > 0) {
@@ -27305,7 +27305,7 @@ index 400b56657414177cd76a7b94c426dc7c886aa957..a275b17d0852d9d9bc850614713244e5
          }
  
          profilerFiller.pop();
-@@ -946,6 +1217,12 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
+@@ -953,6 +1224,12 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
          if (fluidState.is(fluid)) {
              fluidState.tick(this, pos, blockState);
          }
@@ -27318,7 +27318,7 @@ index 400b56657414177cd76a7b94c426dc7c886aa957..a275b17d0852d9d9bc850614713244e5
      }
  
      private void tickBlock(BlockPos pos, Block block) {
-@@ -953,6 +1230,12 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
+@@ -960,6 +1237,12 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
          if (blockState.is(block)) {
              blockState.tick(this, pos, this.random);
          }
@@ -27331,7 +27331,7 @@ index 400b56657414177cd76a7b94c426dc7c886aa957..a275b17d0852d9d9bc850614713244e5
      }
  
      // Paper start - log detailed entity tick information
-@@ -1035,6 +1318,11 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
+@@ -1042,6 +1325,11 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
      }
  
      public void save(@Nullable ProgressListener progress, boolean flush, boolean skipSave) {
@@ -27343,7 +27343,7 @@ index 400b56657414177cd76a7b94c426dc7c886aa957..a275b17d0852d9d9bc850614713244e5
          ServerChunkCache chunkSource = this.getChunkSource();
          if (!skipSave) {
              org.bukkit.Bukkit.getPluginManager().callEvent(new org.bukkit.event.world.WorldSaveEvent(this.getWorld())); // CraftBukkit
-@@ -1047,13 +1335,18 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
+@@ -1054,13 +1342,18 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
                  progress.progressStage(Component.translatable("menu.savingChunks"));
              }
  
@@ -27367,7 +27367,7 @@ index 400b56657414177cd76a7b94c426dc7c886aa957..a275b17d0852d9d9bc850614713244e5
  
          // CraftBukkit start - moved from MinecraftServer.saveChunks
          ServerLevel worldserver1 = this;
-@@ -1184,7 +1477,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
+@@ -1191,7 +1484,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
              this.removePlayerImmediately((ServerPlayer)entity, Entity.RemovalReason.DISCARDED);
          }
  
@@ -27376,7 +27376,7 @@ index 400b56657414177cd76a7b94c426dc7c886aa957..a275b17d0852d9d9bc850614713244e5
      }
  
      // CraftBukkit start
-@@ -1215,7 +1508,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
+@@ -1222,7 +1515,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
              }
              // CraftBukkit end
  
@@ -27385,7 +27385,7 @@ index 400b56657414177cd76a7b94c426dc7c886aa957..a275b17d0852d9d9bc850614713244e5
          }
      }
  
-@@ -1226,7 +1519,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
+@@ -1233,7 +1526,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
  
      public boolean tryAddFreshEntityWithPassengers(Entity entity, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason reason) {
          // CraftBukkit end
@@ -27394,7 +27394,7 @@ index 400b56657414177cd76a7b94c426dc7c886aa957..a275b17d0852d9d9bc850614713244e5
              return false;
          } else {
              this.addFreshEntityWithPassengers(entity, reason); // CraftBukkit
-@@ -1961,7 +2254,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
+@@ -1968,7 +2261,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
                  }
              }
  
@@ -27403,7 +27403,7 @@ index 400b56657414177cd76a7b94c426dc7c886aa957..a275b17d0852d9d9bc850614713244e5
              bufferedWriter.write(String.format(Locale.ROOT, "block_entity_tickers: %d\n", this.blockEntityTickers.size()));
              bufferedWriter.write(String.format(Locale.ROOT, "block_ticks: %d\n", this.getBlockTicks().count()));
              bufferedWriter.write(String.format(Locale.ROOT, "fluid_ticks: %d\n", this.getFluidTicks().count()));
-@@ -1979,13 +2272,13 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
+@@ -1986,13 +2279,13 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
          Path path1 = path.resolve("chunks.csv");
  
          try (Writer bufferedWriter2 = Files.newBufferedWriter(path1)) {
@@ -27419,7 +27419,7 @@ index 400b56657414177cd76a7b94c426dc7c886aa957..a275b17d0852d9d9bc850614713244e5
          }
  
          Path path3 = path.resolve("entities.csv");
-@@ -2094,8 +2387,8 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
+@@ -2101,8 +2394,8 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
              Locale.ROOT,
              "players: %s, entities: %s [%s], block_entities: %d [%s], block_ticks: %d, fluid_ticks: %d, chunk_source: %s",
              this.players.size(),
@@ -27430,7 +27430,7 @@ index 400b56657414177cd76a7b94c426dc7c886aa957..a275b17d0852d9d9bc850614713244e5
              this.blockEntityTickers.size(),
              getTypeCount(this.blockEntityTickers, TickingBlockEntity::getType),
              this.getBlockTicks().count(),
-@@ -2127,15 +2420,25 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
+@@ -2134,15 +2427,25 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
      @Override
      public LevelEntityGetter<Entity> getEntities() {
          org.spigotmc.AsyncCatcher.catchOp("Chunk getEntities call"); // Spigot
@@ -27459,7 +27459,7 @@ index 400b56657414177cd76a7b94c426dc7c886aa957..a275b17d0852d9d9bc850614713244e5
      }
  
      public void startTickingChunk(LevelChunk chunk) {
-@@ -2153,32 +2456,45 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
+@@ -2160,32 +2463,45 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
      @Override
      public void close() throws IOException {
          super.close();
@@ -27512,7 +27512,7 @@ index 400b56657414177cd76a7b94c426dc7c886aa957..a275b17d0852d9d9bc850614713244e5
      }
  
      @Override
-@@ -2232,7 +2548,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
+@@ -2239,7 +2555,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
      @Override
      public CrashReportCategory fillReportDetails(CrashReport report) {
          CrashReportCategory crashReportCategory = super.fillReportDetails(report);

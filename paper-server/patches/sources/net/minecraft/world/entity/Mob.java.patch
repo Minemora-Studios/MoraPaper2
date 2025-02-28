@@ -209,7 +209,27 @@
              }
  
              ItemStack itemStack = equipmentSlotForItem.limit(stack);
-@@ -703,22 +_,29 @@
+@@ -700,25 +_,50 @@
+         return false;
+     }
+ 
++    // MoraPaper
++    public @Nullable java.util.UUID nearestPlayerUUID = null;
++    public double nearestPlayerDistanceSquared = Double.MAX_VALUE;
++
++    public @Nullable Player getNearestPlayerNew() {
++        if(nearestPlayerUUID != null) {
++            org.bukkit.entity.Player bukkitPlayer = org.bukkit.Bukkit.getPlayer(nearestPlayerUUID);
++            if(bukkitPlayer != null) {
++                return ((org.bukkit.craftbukkit.entity.CraftPlayer)bukkitPlayer).getHandle();
++            }
++            else {
++                nearestPlayerUUID = null;
++            }
++        }
++        return null;
++    }
++
      @Override
      public void checkDespawn() {
          if (this.level().getDifficulty() == Difficulty.PEACEFUL && this.shouldDespawnInPeaceful()) {
@@ -217,7 +237,8 @@
 +            this.discard(EntityRemoveEvent.Cause.DESPAWN); // CraftBukkit - add Bukkit remove cause
          } else if (!this.isPersistenceRequired() && !this.requiresCustomPersistence()) {
 -            Entity nearestPlayer = this.level().getNearestPlayer(this, -1.0);
-+            Entity nearestPlayer = this.level().findNearbyPlayer(this, -1.0, EntitySelector.PLAYER_AFFECTS_SPAWNING); // Paper - Affects Spawning API
++            //Entity nearestPlayer = this.level().findNearbyPlayer(this, -1.0, EntitySelector.PLAYER_AFFECTS_SPAWNING); // Paper - Affects Spawning API
++            Player nearestPlayer = this.getNearestPlayerNew();
              if (nearestPlayer != null) {
 -                double d = nearestPlayer.distanceToSqr(this);
 -                int despawnDistance = this.getType().getCategory().getDespawnDistance();

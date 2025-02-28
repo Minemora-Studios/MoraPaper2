@@ -2326,7 +2326,7 @@ index 0000000000000000000000000000000000000000..298076a0db4e6ee6e4775ac43bf749d9
 +    }
 +}
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index a293d1481b5f4a1d18addc3e518486c639223f09..5bf38ab129451e867b638cfbd2d7be59cbf7f38d 100644
+index b09f5ffe7e1a77470972bcc4e01182b391f5b660..81ef8899f1549863fe4ca53b4215dcdfdefea797 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -214,6 +214,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
@@ -2337,7 +2337,7 @@ index a293d1481b5f4a1d18addc3e518486c639223f09..5bf38ab129451e867b638cfbd2d7be59
  
      public LevelChunk getChunkIfLoaded(int x, int z) {
          return this.chunkSource.getChunkAtIfLoadedImmediately(x, z); // Paper - Use getChunkIfLoadedImmediately
-@@ -2557,6 +2558,13 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
+@@ -2564,6 +2565,13 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
          return this.chunkSource.getGenerator().getSeaLevel();
      }
  
