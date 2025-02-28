@@ -33666,10 +33666,10 @@ index 41ddaceb7485626b1f2ee258c2142eb3114c106e..f883c6400281788982403d0af3ee2861
      private final DataFixTypes dataFixType;
  
 diff --git a/net/minecraft/world/level/entity/EntityTickList.java b/net/minecraft/world/level/entity/EntityTickList.java
-index 342c83309b19c64d86e0dd97c1756c96be52772b..423779a2b690f387a4f0bd07b97b50e0baefda76 100644
+index 342c83309b19c64d86e0dd97c1756c96be52772b..86a81876f1cc75e573121c3ef563343b4f75f1d4 100644
 --- a/net/minecraft/world/level/entity/EntityTickList.java
 +++ b/net/minecraft/world/level/entity/EntityTickList.java
-@@ -9,52 +9,38 @@ import javax.annotation.Nullable;
+@@ -9,52 +9,48 @@ import javax.annotation.Nullable;
  import net.minecraft.world.entity.Entity;
  
  public class EntityTickList {
@@ -33679,18 +33679,21 @@ index 342c83309b19c64d86e0dd97c1756c96be52772b..423779a2b690f387a4f0bd07b97b50e0
 -    private Int2ObjectMap<Entity> iterated;
 +    private final ca.spottedleaf.moonrise.common.list.IteratorSafeOrderedReferenceSet<net.minecraft.world.entity.Entity> entities = new ca.spottedleaf.moonrise.common.list.IteratorSafeOrderedReferenceSet<>(); // Paper - rewrite chunk system
  
-     private void ensureActiveIsNotIterated() {
+-    private void ensureActiveIsNotIterated() {
 -        if (this.iterated == this.active) {
 -            this.passive.clear();
 -
 -            for (Entry<Entity> entry : Int2ObjectMaps.fastIterable(this.active)) {
 -                this.passive.put(entry.getIntKey(), entry.getValue());
 -            }
--
++    // MoraPaper - async list to use entities from other threads
++    private final java.util.concurrent.ConcurrentLinkedQueue<net.minecraft.world.entity.Entity> asyncEntities = new java.util.concurrent.ConcurrentLinkedQueue<>();
+ 
 -            Int2ObjectMap<Entity> map = this.active;
 -            this.active = this.passive;
 -            this.passive = map;
 -        }
++    private void ensureActiveIsNotIterated() {
 +        // Paper - rewrite chunk system
      }
  
@@ -33698,12 +33701,14 @@ index 342c83309b19c64d86e0dd97c1756c96be52772b..423779a2b690f387a4f0bd07b97b50e0
          this.ensureActiveIsNotIterated();
 -        this.active.put(entity.getId(), entity);
 +        this.entities.add(entity); // Paper - rewrite chunk system
++        this.asyncEntities.add(entity); // MoraPaper - async list to use entities from other threads
      }
  
      public void remove(Entity entity) {
          this.ensureActiveIsNotIterated();
 -        this.active.remove(entity.getId());
 +        this.entities.remove(entity); // Paper - rewrite chunk system
++        this.asyncEntities.remove(entity); // MoraPaper - async list to use entities from other threads
      }
  
      public boolean contains(Entity entity) {
@@ -33735,6 +33740,11 @@ index 342c83309b19c64d86e0dd97c1756c96be52772b..423779a2b690f387a4f0bd07b97b50e0
 +            iterator.finishedIterating();
          }
 +        // Paper end - rewrite chunk system
++    }
++
++    // MoraPaper - async list to use entities from other threads
++    public java.util.concurrent.ConcurrentLinkedQueue<Entity> getEntitiesAsync() {
++        return asyncEntities;
      }
  }
 diff --git a/net/minecraft/world/level/gameevent/DynamicGameEventListener.java b/net/minecraft/world/level/gameevent/DynamicGameEventListener.java
